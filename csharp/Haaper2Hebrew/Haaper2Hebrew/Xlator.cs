@@ -57,7 +57,7 @@ namespace Haaper2Hebrew
 
 				if(keyList.Count > 1) {
 					xlat_regex_text = "(" + String.Join("|", keyList ) + ")";
-					Console.WriteLine("final: "+xlat_regex_text);
+					//Console.WriteLine("final: "+xlat_regex_text);
 				}
 				_xlat_regex = new Regex( xlat_regex_text );
 			} else {
@@ -78,7 +78,11 @@ namespace Haaper2Hebrew
 				}
 			});
 		}
-
+		/// <summary>
+		/// Sorts the list of Regex matches by length and escapes strings for literal matching.
+		/// </summary>
+		/// <returns>Escaped strings in descending order of length</returns>
+		/// <param name="e">enumerable (list or collection of keys)</param>
 		static IEnumerable<string> SortByLength(IEnumerable<string> e)
 		{
 			if( ((ICollection<string>)e).Count > 1 ) {
