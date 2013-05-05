@@ -15,12 +15,16 @@ namespace Haaper2Hebrew
 			Console.OutputEncoding = Encoding.UTF8;
 			//Console.WriteLine ("Hello World!");
 			string input = "hatiqwah";
-			Console.WriteLine(input);
+			Console.WriteLine("input: "+input);
 
 			Tiqwah2Unicode tiqwah2hebrew = new Tiqwah2Unicode();
+			Unicode2Tiqwah hebrew2tiqwah = new Unicode2Tiqwah();
 
 			string output = tiqwah2hebrew.xlat(input);
-			Console.WriteLine(output);
+			Console.WriteLine("tiqwah2hebrew: "+output);
+
+			string output2 = hebrew2tiqwah.xlat(output);
+			Console.WriteLine("hebrew2tiqwah: "+output2);
 		}
 	}
 }

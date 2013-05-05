@@ -25,8 +25,8 @@ namespace Haaper2Hebrew
 			{ @"n\b",        "\u05dF" }, // final nun-sofit 
 			{ @"n"  ,        "\u05e0" }, // nun
 			{ @"s"  ,        "\u05e1" }, // samekh
-			{ ""+'`',        "\u05e2" }, // ayin
-			{ @"p\b",       "\u05e3" }, // final pe-sofit 
+			{ "`"   ,        "\u05e2" }, // ayin
+			{ @"p\b",        "\u05e3" }, // final pe-sofit 
 			{ @"p"  ,        "\u05e4" }, // peh / pey
 			{ @"Y\b",        "\u05e5" }, // final tsadi-sofit
 			{ @"Y"  ,        "\u05e6" }, // tsadi
@@ -38,7 +38,7 @@ namespace Haaper2Hebrew
 			{ @"t"  ,        "\u05eA" }, // taf / tav
 			
 			// Points and punctuation
-			{ ""+'"'  ,       "\u05b0" }, // sh'va / shewa (schwa)
+			{ "\""    ,       "\u05b0" }, // sh'va / shewa (schwa)
 			{ "{SWA}" ,       "\u05b0" }, // sh'va / shewa (schwa)
 			{ "{HSE}" ,       "\u05b1" }, // hateph-segol
 			{ "{HPA}" ,       "\u05b2" }, // hateph-patakh

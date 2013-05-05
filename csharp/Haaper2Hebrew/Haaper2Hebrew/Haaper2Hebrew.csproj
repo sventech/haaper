@@ -38,6 +38,7 @@
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Xlator.cs" />
     <Compile Include="Tiqwah2Unicode.cs" />
+    <Compile Include="Unicode2Tiqwah.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
