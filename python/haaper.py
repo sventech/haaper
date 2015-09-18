@@ -2,22 +2,22 @@
 # -*- coding: utf-8 -*-
 # Filename: haaper.py
 
-version = 0.1
+version = 0.2
 import re 
 import sys
 import codecs
 import argparse
 
 # single-pass multiple string substitution using a dictionary:
-# The simplest, lambda-based implementation by Xavier Defrang
+# by Xavier Defrang
 # from code.activestate.com/recipes/81330/
 #
 # You may combine both the dictionnary and search-and-replace
 # into a single object using a 'callable' dictionary wrapper
 # which can be directly used as a callback object.
-# 
+# released under Python Software Foundation License
 
-# In Python 2.2+ you may extend the 'dictionary' built-in class instead
+# In Python 2.2+ you may extend the 'dictionary' built-in class
 from UserDict import UserDict 
 class Xlator(UserDict):
 
@@ -104,6 +104,7 @@ tiqwah2unicode_dict = {
 # Points and punctuation
 	'"'     :      u"\u05b0", # sh'va / shewa (schwa)
 	"{SWA}" :      u"\u05b0", # sh'va / shewa (schwa)
+	"@"     :      u"\u05b0", # sh'va / shewa (schwa)
 	"{HSE}" :      u"\u05b1", # hateph-segol
 	"{HPA}" :      u"\u05b2", # hateph-patakh
 	"{HQA}" :      u"\u05b3", # hateph-qamats
@@ -180,7 +181,8 @@ tiqwah2unicode_dict = {
 
 # Added punctuation
 	"!"     :      u"\u05f3", # punctuation-geresh ( ' )
-	"!!"    :      u"\u05f4"  # punctuation-gershayim ( '' )
+	"!!"    :      u"\u05f4", # punctuation-gershayim ( '' )
+	"{MUL}" :      u'\xd7'  # multiplication symbol &times;
 }
 
 
@@ -221,7 +223,7 @@ unicode2tiqwah_dict = {
 
 	"/"         :       '_',      # gramatic-word break (and/of/in/possessive)
 #	u"\u05b0"   :       '{SWA}',  # sh'va / shewa (schwa)
-	u"\u05b0"   :       '"',      # sh'va / shewa (schwa)
+	u"\u05b0"   :       '@',      # sh'va / shewa (schwa)
 	u"\u05b1"   :       '{HSE}',  # hateph-segol  '"E' (sh'va-E)
 	u"\u05b2"   :       '{HPA}',  # hateph-patakh '"a' (sh'va-a)
 	u"\u05b3"   :       '{HQA}',  # hateph-qamats '"A' (sh'va-A)
@@ -301,7 +303,8 @@ unicode2tiqwah_dict = {
 	u"\u05f4"   :       "!!",    # punctuation-gershayim ( '' )
 	"<SAMEKH/>" :       "{SET}", # parsha marker Setuma
 	"<PEH/>"    :       "{PET}", # parsha marker Petukha
-	"<SHIN/>"   :       "{SHI}"  # parsha marker Shir?
+	"<SHIN/>"   :       "{SHI}", # parsha marker Shir?
+	u'\xd7'     :       "{MUL}"  # multiplication symbol &times;
 }
 
 # SAMPA for Hebrew
@@ -421,14 +424,36 @@ def tiqwah2phonetic(hebrew_tiqwah):
 # command line
 # 
 if __name__ == "__main__": 
-    input_file = codecs.open(sys.argv[1], 'r', encoding = 'utf-8')
-    output_file = codecs.open(sys.argv[2], 'w+', encoding = 'utf-8')
+    parser = argparse.ArgumentParser(description='haaper: Convert one Hebrew encoding to another')
+    parser.add_argument("-v", "--verbosity",
+        action="store_true",
+        help="verbosity flag", default=False)
+    parser.add_argument("-t", "--tiqwah", "--tiqwah2unicode",
+        action="store_true",
+        help="Convert Tiqwah format to Unicode Hebrew", default=True)
+    parser.add_argument("-u", "--unicode", "--unicode2tiqwah",
+        action="store_true",
+        help="Convert Unicode Hebrew to Tiqwah ASCII", default=False)
+    parser.add_argument("-s", "--sampa", "--tiqwah2sampa",
+        action="store_true", 
+        help="Convert Tiqwah ASCII to SAMPA phonetic ASCII", default=False)
+    parser.add_argument('input_file_name',
+        help="file to be processed")
+    parser.add_argument('output_file_name',
+        help="result file")
+    args = parser.parse_args()
+
+    input_file = codecs.open(args.input_file_name, 'r', encoding = 'utf-8')
+    output_file = codecs.open(args.output_file_name, 'w+', encoding = 'utf-8')
+
     for line in input_file:
         line = line.rstrip('\n')
-        #output_file.write( line + '\n' )
-        output_file.write( tiqwah2unicode(line) + '\n' )
-        #output_file.write( unicode2tiqwah(line) + '\n' )
-
+        if args.sampa:
+            output_file.write( tiqwah2phonetic(line) + '\n' )
+        elif args.unicode:
+            output_file.write( unicode2tiqwah(line) + '\n' )
+        else:
+            output_file.write( tiqwah2unicode(line) + '\n' )
 
 # End of haaper.py
 
