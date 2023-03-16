@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # Filename: haaper.py
 
 version = 0.3
@@ -47,86 +47,91 @@ class Xlator(UserDict):
 #  From Unicode Hebrew, Version 5.0.
 
 # special Unicode stuff
-WOJ = "\u206D"  # Word Joiner (WJ)
-ZWJ = "\u200D"  # Zero-Width Joiner (ZWJ)
+WOJ = "\u206D"   # Word Joiner (WJ)
+ZWJ = "\u200D"   # Zero-Width Joiner (ZWJ)
 ZWNJ = "\u200C"  # Zero-Width Non-Joiner (ZWJ)
-ZWS = "\u200B"  # Zero-Width Space (ZWS)
-CGJ = "\u034F"  # Combining Grapheme Joiner
-SPC = "\u0020"  # Space
-SHY = "\u00AD"  # Soft-hyphen (shy)
-NHY = "\u00AD"  # Non-breaking Hyphen (shy)
+ZWS = "\u200B"   # Zero-Width Space (ZWS)
+CGJ = "\u034F"   # Combining Grapheme Joiner
+SPC = "\u0020"   # Space
+SHY = "\u00AD"   # Soft-hyphen (SHY)
+NHY = "\u00AD"   # Non-breaking Hyphen (NHY)
 
-RTL = "\u203D"   # Right To Left marker
-LTR = "\u202D"   # Right To Left marker
-BDI = "\u202C"   # Return to Normal Bi-Di text mode
+# https://www.oxygenxml.com/doc/versions/25.0/ug-editor/topics/control-text-direction-dfc.html
+LRM = "\u200E"   # Left to right mark (zero-width) single "word"
+RLM = "\u200F"   # Right To Left mark (zero-width) single "word"
+LRE = "\u202A"   # Left to right embedding (following text)
+RLE = "\u202B"   # Right To Left embedding (following text)
+PDF = "\u202C"   # Return to normal Bidirectional text mode (pop directional formatting)
+LRO = "\u202D"   # Left To Right override
+RLO = "\u202E"   # Right To Left override
 
 # Letters"  = Consonants
 tiqwah2unicode_dict = {
-    "'": "\u05d0",  # aleph
-    "b": "\u05d1",  # bet / vet
-    "g": "\u05d2",  # gimel
-    "d": "\u05d3",  # daleth
-    "h": "\u05d4",  # hey
-    "w": "\u05d5",  # vav / waw
-    "z": "\u05d6",  # zayin
-    "x": "\u05d7",  # khet
-    "T": "\u05d8",  # tet
-    "y": "\u05d9",  # yodh / yud
-    "k$": "\u05dA",  # final kaf-sofit
-    "k": "\u05dB",  # kaf / kaph
-    "l": "\u05dC",  # lamedh
-    "m$": "\u05dD",  # final mem-sofit
-    "m": "\u05dE",  # mem
-    "n$": "\u05dF",  # final nun-sofit
-    "n": "\u05e0",  # nun
-    "s": "\u05e1",  # samekh
-    "\`": "\u05e2",  # ayin
-    "p$": "\u05e3",  # final pe-sofit
-    "p": "\u05e4",  # peh / pey
-    "Y$": "\u05e5",  # final tsadi-sofit
-    "Y": "\u05e6",  # tsadi
-    "q": "\u05e7",  # quf / qof
-    "r": "\u05e8",  # resh
-    "S": "\u05e9\u05c1",  # shin w/dot
-    "W": "\u05e9\u05c2",  # sin w/dot
-    "W/": "\u05e9",  # shin no dot
-    "t": "\u05eA",  # taf / tav
+    r"'": "\u05d0",   # aleph
+    r"b": "\u05d1",   # bet / vet
+    r"g": "\u05d2",   # gimel
+    r"d": "\u05d3",   # daleth
+    r"h": "\u05d4",   # hey
+    r"w": "\u05d5",   # vav / waw
+    r"z": "\u05d6",   # zayin
+    r"x": "\u05d7",   # khet
+    r"T": "\u05d8",   # tet
+    r"y": "\u05d9",   # yodh / yud
+    r"k$": "\u05dA",  # final kaf-sofit
+    r"k": "\u05dB",   # kaf / kaph
+    r"l": "\u05dC",   # lamedh
+    r"m$": "\u05dD",  # final mem-sofit
+    r"m": "\u05dE",   # mem
+    r"n$": "\u05dF",  # final nun-sofit
+    r"n": "\u05e0",   # nun
+    r"s": "\u05e1",   # samekh
+    r"\`": "\u05e2",  # ayin
+    r"p$": "\u05e3",  # final pe-sofit
+    r"p": "\u05e4",   # peh / pey
+    r"Y$": "\u05e5",  # final tsadi-sofit
+    r"Y": "\u05e6",   # tsadi
+    r"q": "\u05e7",   # quf / qof
+    r"r": "\u05e8",   # resh
+    r"S": "\u05e9\u05c1",  # shin w/dot
+    r"W": "\u05e9\u05c2",  # sin w/dot
+    r"W/": "\u05e9",  # shin no dot
+    r"t": "\u05eA",   # taf / tav
 
     # Points and punctuation
-    '"': "\u05b0",  # sh'va / shewa (schwa)
-    "{SWA}": "\u05b0",  # sh'va / shewa (schwa)
-    "@": "\u05b0",  # sh'va / shewa (schwa)
-    "{HSE}": "\u05b1",  # hateph-segol
-    "{HPA}": "\u05b2",  # hateph-patakh
-    "{HQA}": "\u05b3",  # hateph-qamats
-    "i": "\u05b4",  # hiriq
-    "{HIR}": "\u05b4",  # hiriq
-    "e": "\u05b5",  # tsere
-    "{SER}": "\u05b5",  # tsere
-    "E": "\u05b6",  # segol
-    "{SEG}": "\u05b6",  # segol
-    "a": "\u05b7",  # patakh
-    "{PAT}": "\u05b7",  # patakh
-    "A": "\u05b8",  # qamats
-    "{QAM}": "\u05b8",  # qamats
-    "o": "\u05b9",  # holam
-    "{HOL}": "\u05b9",  # holam
-    "w^o": "\u05ba",  # holam haser (Unicode 5.0)
-    #    "w^o":      u"\u05ba\u05d5",  # holam haser (Unicode 4.1)
-    "u": "\u05bb",  # qubuts / qibbuts
-    "{QIB}": "\u05bb",  # qubuts / qibbuts
-    "*": "\u05bc",  # dagesh
-    "{DAGESH}": "\u05bc",  # dagesh / BeGaD KeFaT ??
-    "{SIL}": "\u05bd",  # meteg -- encode as silluq
-    "=": "\u05be",  # maqaf / maqqeph
-    "{RAF}": "\u05bf",  # rafe
-    "{LIN}": "\u05c0",  # paseq / lineola
-    ":": "\u05c3",  # sof pasuq
-    "upperdot": "\u05c4",  # upper dot
-    "lowerdot": "\u05c5",  # lower dot
-    "n/": "\u05c6",  # reversed nun / nun hafukha
-    "n//": "\u05e0",  # raised-nun (hafukh) -- not supported, convert to regular
-    "{PCR}": "\u0307",  # punctum-extraordinarium / circellus/masora-number-dot
+    r'"': "\u05b0",      # sh'va / shewa (schwa)
+    r"{SWA}": "\u05b0",  # sh'va / shewa (schwa)
+    r"@": "\u05b0",      # sh'va / shewa (schwa)
+    r"{HSE}": "\u05b1",  # hateph-segol
+    r"{HPA}": "\u05b2",  # hateph-patakh
+    r"{HQA}": "\u05b3",  # hateph-qamats
+    r"i": "\u05b4",      # hiriq
+    r"{HIR}": "\u05b4",  # hiriq
+    r"e": "\u05b5",      # tsere
+    r"{SER}": "\u05b5",  # tsere
+    r"E": "\u05b6",      # segol
+    r"{SEG}": "\u05b6",  # segol
+    r"a": "\u05b7",      # patakh
+    r"{PAT}": "\u05b7",  # patakh
+    r"A": "\u05b8",      # qamats
+    r"{QAM}": "\u05b8",  # qamats
+    r"o": "\u05b9",      # holam
+    r"{HOL}": "\u05b9",  # holam
+    r"w^o": "\u05ba",    # holam haser (Unicode 5.0)
+    #    r"w^o":      "\u05ba\u05d5",  # holam haser (Unicode 4.1)
+    r"u": "\u05bb",      # qubuts / qibbuts
+    r"{QIB}": "\u05bb",  # qubuts / qibbuts
+    r"*": "\u05bc",      # dagesh
+    r"{DAGESH}": "\u05bc",  # dagesh / BeGaD KeFaT ??
+    r"{SIL}": "\u05bd",  # meteg -- encode as silluq
+    r"=": "\u05be",      # maqaf / maqqeph
+    r"{RAF}": "\u05bf",  # rafe
+    r"{LIN}": "\u05c0",  # paseq / lineola
+    r":": "\u05c3",      # sof pasuq
+    r"{upperdot}": "\u05c4",  # upper dot
+    r"{lowerdot}": "\u05c5",  # lower dot
+    r"n/": "\u05c6",     # reversed nun / nun hafukha
+    r"n//": "\u05e0",    # raised-nun (hafukh) -- not supported, convert to regular
+    r"{PCR}": "\u0307",  # punctum-extraordinarium / circellus/masora-number-dot
 
     # Accents
     "{ATN}": "\u0591",  # aetnakhta / atnakh
@@ -162,14 +167,14 @@ tiqwah2unicode_dict = {
     "{CIR}": "\u05af",  # masora-circle / circellus?
 
     # Yiddish ligatures just in case...
-    "ww": "\u05f0",  # double-vav
-    "wy": "\u05f1",  # vav-yod
-    "yy": "\u05f2",  # double-yod
+    "ww": "\u05f0",     # double-vav
+    "wy": "\u05f1",     # vav-yod
+    "yy": "\u05f2",     # double-yod
 
     # Added punctuation
-    "!": "\u05f3",  # punctuation-geresh ( ' )
-    "!!": "\u05f4",  # punctuation-gershayim ( '' )
-    "{MUL}": '\xd7'  # multiplication symbol &times;
+    r"!": "\u05f3",      # punctuation-geresh ( ' )
+    r"!!": "\u05f4",     # punctuation-gershayim ( '' )
+    r"{MUL}": '\xd7'     # multiplication symbol &times;
 }
 
 
@@ -203,8 +208,38 @@ unicode2tiqwah_dict = {
     "\u05e9\u05c1": "S",  # shin w/dot
     "\u05e9\u05c2": "W",  # sin  w/dot
     "\u05e9": "W/",  # shin / no dot
-    "\u05eA": "t",  # tav
+    "\u05ea": "t",   # tav
     "\ufb4f": "'/l",  # aleph-lamed ligature
+
+    # combined
+    "\ufb40": "n*",  # nun with dagesh
+    "\ufb30": "'*",  # aleph with dagesh
+    "\ufb31": "b*",  # bet with dagesh
+    "\ufb32": "g*",  # aleph with dagesh
+    "\ufb33": "d*",  # aleph with dagesh
+    "\ufb34": "h*",  # hey with dagesh
+    "\ufb35": "w*",  # waw / vav with dagesh
+    "\ufb36": "z*",  # zayin with dagesh
+    "\ufb38": "T*",  # tet with dagesh
+    "\ufb39": "y*",  # yud with dagesh
+    "\ufb3a": "k*",  # final-kaf with dagesh
+    "\ufb3b": "k*",  # kaf with dagesh
+    "\ufb3c": "l*",  # lamed with dagesh
+    #"\ufb3e": "m*",  # final-mem with dagesh
+    "\ufb3e": "m*",  # mem with dagesh
+    #"\ufb40": "n*",  # final-nun with dagesh
+    "\ufb40": "n*",  # nun with dagesh
+    "\ufb43": "p*",  # final-pe with dagesh
+    "\ufb44": "p*",  # pe with dagesh
+    #"\ufb40": "Y*",  # final-tsadi with dagesh
+    "\ufb46": "Y*",  # tsadi with dagesh
+    "\ufb47": "q*",  # quf with dagesh
+    "\ufb48": "r*",  # resh with dagesh
+    "\ufb49\u05c1": "S*",  # shin w/dot with dagesh
+    "\ufb49\u05c2": "W*",  # sin  w/dot with dagesh
+    "\ufb49": "W/*",  # shin / no dot with dagesh
+    "\ufb4a": "t*",   # tav with dagesh
+    
 
     # Points and punctuation
     "/": '_',  # gramatic-word break (and/of/in/possessive)
@@ -280,6 +315,7 @@ unicode2tiqwah_dict = {
     "\u05af": "{CIR}",  # masora-circle / circellus?
 
     # Yiddish ligatures just in case...
+    "\u05ef": "yyy",    # yod triangle
     "\u05f0": "ww",    # double-vav
     "\u05f1": "wy",    # vav-yod
     "\u05f2": "yy",    # double-yod
@@ -287,7 +323,7 @@ unicode2tiqwah_dict = {
     # Added punctuation
     "\u05f3": "!",     # punctuation-geresh ( ' )
     "\u05f4": "!!",    # punctuation-gershayim ( '' )
-    '\xd7': "{MUL}"  # multiplication symbol &times;
+    '\xd7': "{MUL}"    # multiplication symbol &times;
 }
 
 # SAMPA for Hebrew
@@ -383,19 +419,29 @@ tiqwah2SAMPA_dict = {
 }
 
 
+def custom2xlat(custom_text: str, match_dict: dict, rtl=False) -> str:
+    """ convert from a custom format based on a regex dict"""
+    xlator = Xlator(match_dict)
+    xlat_text = xlator.xlat(custom_text)
+    if rtl:
+        return f"{RLM}{xlat_text}{PDF}"
+    else:
+        return xlat_text
+
+
 def unicode2tiqwah(hebrew_unicode):
     xlator = Xlator(unicode2tiqwah_dict)
     tiqwah_text = xlator.xlat(hebrew_unicode)
-    text = tiqwah_text.replace(RTL, '')
-    tiqwah_text = text.replace(LTR, '').replace(BDI, '')
+    # remove text direction markers (because output is plain ASCII)
+    text_direction_marker = fr"{LRM}|{RLM}|{LRE}|{RLE}|{LRO}|{RLO}|{PDF}"
+    tiqwah_text = re.sub(text_direction_marker, '', tiqwah_text)
     return tiqwah_text
 
 
 def tiqwah2unicode(hebrew_tiqwah):
     xlator = Xlator(tiqwah2unicode_dict)
     unicode_text = xlator.xlat(hebrew_tiqwah)
-    #return f"{RTL}{unicode_text}{BDI}"
-    return unicode_text
+    return f"{RLM}{unicode_text}{PDF}"
 
 
 def tiqwah2phonetic(hebrew_tiqwah):
