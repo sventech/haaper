@@ -25,7 +25,7 @@ class Xlator(UserDict):
     def _make_regex(self):
         ''' Build a regular expression object
          based on the keys of the current dictionary sorted by length'''
-        keys = sorted(self.keys(), key=lambda x: len(x))
+        keys = sorted(self.keys(), key=lambda x: -len(x))
         return re.compile("(%s)" % "|".join(map(re.escape, keys)))
 
     def __call__(self, mo):
@@ -330,7 +330,7 @@ tiqwah2SAMPA_dict = {
     # "\'": "@",  # aleph
     "'": "",  # aleph
     # "`": "@",  # ayin
-    "`"  : "",  # ayin
+    "`"  : "?\\",  # ayin
 
 	#   Fricatives
 	"p"   :  "f", # phe
