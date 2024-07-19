@@ -3,12 +3,10 @@
 
 version = 0.4
 import re
-import sys
 import codecs
 from collections import UserDict
 import argparse
-import json
-from HaikVantouraKey import ProsePattern_dict, PsalmPattern_dict, CodePattern_dict, CodeTable_dict
+from haaper.haik_vantoura_key import ProsePattern_dict, PsalmPattern_dict, CodePattern_dict, CodeTable_dict
 
 # single-pass multiple string substitution using a dictionary:
 # by Xavier Defrang
@@ -21,10 +19,13 @@ from HaikVantouraKey import ProsePattern_dict, PsalmPattern_dict, CodePattern_di
 
 class Xlator(UserDict):
     """ An all-in-one multiple string substitution class """
+    def __init__(self, table, verbose=False):
+        super().__init__(table)
+        self.verbose = verbose
 
     def _make_regex(self):
         ''' Build a regular expression object
-         based on the keys of the current dictionary sorted by length'''
+         based on the keys of the current dictionary sorted by descending length'''
         keys = sorted(self.keys(), key=lambda x: -len(x))
         return re.compile("(%s)" % "|".join(map(re.escape, keys)))
 
@@ -41,7 +42,10 @@ class Xlator(UserDict):
         self.count = 0
 
         # Process text
-        return self._make_regex().sub(self, text)
+        xl = self._make_regex().sub(self, text)
+        if self.verbose:
+            print(f"Subst #: {self.count} in {text} -> {xl}")
+        return xl
 
 # End of Xlator
 
@@ -65,7 +69,10 @@ LRE = "\u202A"   # Left to right embedding (following text)
 RLE = "\u202B"   # Right To Left embedding (following text)
 PDF = "\u202C"   # Return to normal Bidirectional text mode (pop directional formatting)
 LRO = "\u202D"   # Left To Right override
-RLO = "\u202E"   # Right To Left overrid
+RLO = "\u202E"   # Right To Left override
+
+DIRECTION_MARKERS = [LRM, RLM, LRE, RLE, PDF, LRO, RLO]
+
 
 # Letters"  = Consonants
 tiqwah2unicode_dict = {
@@ -87,7 +94,7 @@ tiqwah2unicode_dict = {
     "n$":        "\u05dF", # final nun-sofit
     "n"  :       "\u05e0", # nun
     "s"  :       "\u05e1", # samekh
-    "\`" :       "\u05e2", # ayin
+    "`" :       "\u05e2", # ayin
     "p$":        "\u05e3", # final pe-sofit
     "p"  :       "\u05e4", # peh / pey
     "Y$":        "\u05e5", # final tsadi-sofit
@@ -116,10 +123,12 @@ tiqwah2unicode_dict = {
     "<PAT>" :      "\u05b7", # patakh
     "A"     :      "\u05b8", # qamats
     "<QAM>" :      "\u05b8", # qamats
+    "O"     :      "\u05c7", # qamats katan
+    "<QAT>" :      "\u05c7", # qamats katan
     "o"     :      "\u05b9", # holam
     "<HOL>" :      "\u05b9", # holam
     "w^o"   :      "\u05ba", # holam haser (Unicode 5.0)
-    #	"w^o"   :      "\u05ba\u05d5", # holam haser (Unicode 4.1)
+    # "w^o"   :      "\u05ba\u05d5", # holam haser (Unicode 4.1)
     "u"     :      "\u05bb", # qubuts / qibbuts
     "<QIB>" :      "\u05bb", # qubuts / qibbuts
     "*"     :      "\u05bc", # dagesh
@@ -129,8 +138,8 @@ tiqwah2unicode_dict = {
     "<RAF>" :      "\u05bf", # rafe
     "<LIN>" :      "\u05c0", # paseq / lineola
     ":"     :      "\u05c3", # sof pasuq
-    "upperdot" :   "\u05c4", # upper dot
-    "lowerdot" :   "\u05c5", # lower dot
+    "<UPPERDOT>" : "\u05c4", # upper dot
+    "<LOWERDOT>" : "\u05c5", # lower dot
     "n/"    :      "\u05c6", # reversed nun
     "n//"   :      "\u05e0", # raised nun () -- not supported, convert to regular
     "<PCR>" :      "\u0307", # punctum-extraordinarium / circellus / masora-number-dot
@@ -180,7 +189,9 @@ tiqwah2unicode_dict = {
     # Added punctuation
     "!"     :      "\u05f3", # punctuation-geresh ( ' )
     "!!"    :      "\u05f4", # punctuation-gershayim ( '' )
-    "<MUL>" :      '\xd7'  # multiplication symbol &times;
+    "<MUL>" :      '\xd7',   # multiplication symbol &times;
+    "<PLUS>":      "\ufb29", # Hebrew alternate plus sign
+    "<NBSP>":      "\uc2a0"  # Hebrew alternate plus sign
 }
 
 
@@ -234,10 +245,13 @@ unicode2tiqwah_dict = {
 #	"\u05b7"   :       "<PAT>",  # patakh
 	"\u05b8"   :       'A',      # qamats
 #	"\u05b8"   :       "<QAM>",  # qamats
+    "\u05c7"   :       "O",  # qamats katan
+#    "\u05c7"   :       "<QAT>",  # qamats katan
 	"\u05b9"   :       'o',      # holam
 #	"\u05b9"   :       "<HOL>",  # holam
 	"\u05ba"   :       "w^o",    # holam haser (Unicode 5.0)
 	"\u05d5\u05b9"  :  "w^o",    # holam haser (Unicode 4.1)
+#   "*****\u05b9"   :  "w/^o",    # holam haser broken vav
 	"\u05bb"   :       "u",      # qubuts / qibbuts
 #	"\u05bb"   :       "<QIB>",  # qubuts / qibbuts
 	"\u05bc"   :       "*",      # dagesh / mapiq / shuruq
@@ -249,10 +263,10 @@ unicode2tiqwah_dict = {
 	"\u05c0"   :       "|",      # lineola / paseq
 	"\u05c1"   :       ".",      # shin-dot
 	"\u05c3"   :       ":",      # sof pasuq
-	"\u05c4"   :       "upper-dot", # upper dot
-	"\u05c5"   :       "lower-dot", # lower dot
-	"\u05c6"   :  	    "n/",     # reversed nun (hafukha) - punctuation Numbers 10:35–36
-#	"\u05e0"   :  	    "n//",    # raised nun ()
+	"\u05c4"   :       "<UPPERDOT>", # upper dot / punctum extraordinarium / Ezra's points
+	"\u05c5"   :       "<LOWERDOT>", # lower dot / punctum extraordinarium / Ezra's points
+	"\u05c6"   :  	    "n/",    # reversed nun (hafukha) - punctuation Numbers 10:35–36
+#	"\u05e0"   :  	    "n//",   # raised nun (not supported / distinctive)
 	"\u0307"   :       "<PCR>",  # punctum-extraordinarium / circellus / masora-number-dot
 
 # Accents
@@ -296,12 +310,14 @@ unicode2tiqwah_dict = {
 	"\u05f2"   :       "yy",    # double-yod
 
 # Added punctuation
-	"\u05f3"   :       "!",     # punctuation-geresh ( ' )
-	"\u05f4"   :       "!!",    # punctuation-gershayim ( '' )
-	"<SAMEKH/>" :       "<SET>", # parsha marker Setuma
-	"<PEH/>"    :       "<PET>", # parsha marker Petukha
-	"<SHIN/>"   :       "<SHI>", # parsha marker Shir?
-	u'\xd7'     :       "<MUL>"  # multiplication symbol &times;
+	"\u05f3"    :       "!",      # punctuation-geresh ( ' )
+	"\u05f4"    :       "!!",     # punctuation-gershayim ( '' )
+	"<SAMEKH/>" :       "<SET>",  # parsha marker Setuma
+	"<PEH/>"    :       "<PET>",  # parsha marker Petukha
+	"<SHIN/>"   :       "<SHI>",  # parsha marker Shir?
+	u'\xd7'     :       "<MUL>",  # multiplication symbol &times;
+    "\ufb29"    :       "<PLUS>", # Hebrew alternate plus sign T
+    "\uc2a0"    :       "<NBSP>"  # non-breaking space
 }
 
 # SAMPA for Hebrew
@@ -373,11 +389,12 @@ tiqwah2SAMPA_dict = {
 	"e"      :  "e",
 	"E"      :  "e",
 	"<HSE>"  :  "e", # hateph-segol sh'va-E
-	"a"      :  "a",
-	"A"      :  "a",
+	"a"      :  "a", # patakh
+	"A"      :  "a", # qamats
 	"<HPA>"  :  "a", # hateph-patakh sh'va-a
 	"<HQA>"  :  "a", # hateph-qamats sh'va-A
-	"o"      :  "o",
+	"o"      :  "o", # holam
+    "O"      :  "o", # qamats katan
 	"w^o"    :  "o", # holam-haser
 	"u"      :  "u",
 	"w*"     :  "u", # holam-waw?
@@ -397,9 +414,9 @@ tiqwah2SAMPA_dict = {
 }
 
 
-def custom2xlat(custom_text: str, match_dict: dict, rtl=False) -> str:
+def custom2xlat(custom_text: str, match_dict: dict, rtl=False, verbose=False) -> str:
     """ convert from a custom format based on a regex dict"""
-    xlator = Xlator(match_dict)
+    xlator = Xlator(match_dict, verbose=verbose)
     xlat_text = xlator.xlat(custom_text)
     if rtl:
         return f"{RLM}{xlat_text}{PDF}"
@@ -407,8 +424,8 @@ def custom2xlat(custom_text: str, match_dict: dict, rtl=False) -> str:
         return xlat_text
 
 
-def unicode2tiqwah(hebrew_unicode: str) -> str:
-    xlator = Xlator(unicode2tiqwah_dict)
+def unicode2tiqwah(hebrew_unicode: str, verbose=False) -> str:
+    xlator = Xlator(unicode2tiqwah_dict, verbose=verbose)
     tiqwah_text = xlator.xlat(hebrew_unicode)
     # remove text direction markers (because output is plain ASCII)
     text_direction_marker = fr"{LRM}|{RLM}|{LRE}|{RLE}|{LRO}|{RLO}|{PDF}"
@@ -416,74 +433,40 @@ def unicode2tiqwah(hebrew_unicode: str) -> str:
     return tiqwah_text
 
 
-def tiqwah2unicode(hebrew_tiqwah: str) -> str:
-    xlator = Xlator(tiqwah2unicode_dict)
+def tiqwah2unicode(hebrew_tiqwah: str, verbose=False) -> str:
+    xlator = Xlator(tiqwah2unicode_dict, verbose=verbose)
     unicode_text = xlator.xlat(hebrew_tiqwah)
     return f"{RLM}{unicode_text}{PDF}"
 
 
-def tiqwah2phonetic(hebrew_tiqwah: str) -> str:
-    xlator = Xlator(tiqwah2SAMPA_dict)
+def tiqwah2phonetic(hebrew_tiqwah: str, verbose=False) -> str:
+    xlator = Xlator(tiqwah2SAMPA_dict, verbose=verbose)
     sampa_text = xlator.xlat(hebrew_tiqwah)
     return sampa_text
 
 
-def tiqwah2codes(hebrew_tiqwah: str) -> str:
-    xlator = Xlator(CodePattern_dict)
+def tiqwah2codes(hebrew_tiqwah: str, verbose=False) -> str:
+    xlator = Xlator(CodePattern_dict, verbose=verbose)
     code_text = xlator.xlat(hebrew_tiqwah)
     return code_text
 
 
-def code2tiqwah(hebrew_code: str) -> str:
+def code2tiqwah(hebrew_code: str, verbose=False) -> str:
     """ convert from a numeric string code to Tiqwah ASCII na'am -- musical marker"""
     return CodeTable_dict[hebrew_code]
 
 
-def tiqwah2prose_pattern(hebrew_tiqwah: str) -> str:
+def tiqwah2prose_pattern(hebrew_tiqwah: str, verbose=False) -> str:
     """ convert from a Tiqwah ASCII to a music prosodic pattern, absolute pitch or relative pitch +1/-1 etc"""
-    xlator = Xlator(ProsePattern_dict)
+    xlator = Xlator(ProsePattern_dict, verbose=verbose)
     code_text = xlator.xlat(hebrew_tiqwah)
     return code_text
 
 
-def tiqwah2psalm_pattern(hebrew_tiqwah):
+def tiqwah2psalm_pattern(hebrew_tiqwah: str, verbose=False) -> str:
     """ convert from a Tiqwah ASCII to a music psalmodic pattern, absolute pitch or relative pitch +1/-1 etc"""
-    xlator = Xlator(PsalmPattern_dict)
+    xlator = Xlator(PsalmPattern_dict, verbose=verbose)
     code_text = xlator.xlat(hebrew_tiqwah)
     return code_text
 
-
-def main(input_file, output_file, mode='tiqwah'):
-    input_file = codecs.open(args.input_file_name, 'r', encoding='utf-8')
-    output_file = codecs.open(args.output_file_name, 'w+', encoding='utf-8')
-
-    for line in input_file:
-        line = line.rstrip('\n')
-        if 'sampa' == mode:
-            output_file.write(tiqwah2phonetic(line) + '\n')
-        elif 'unicode' == mode:
-            output_file.write(unicode2tiqwah(line) + '\n')
-        else:
-            output_file.write(tiqwah2unicode(line) + '\n')
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='haaper: Convert one Hebrew encoding to another')
-    parser.add_argument("-t", "--tiqwah", "--tiqwah2unicode", action="store_true",
-                        help="Convert Tiqwah format to Unicode Hebrew (default)", default=True)
-    parser.add_argument("-u", "--unicode", "--unicode2tiqwah", action="store_true",
-                        help="Convert Unicode Hebrew to Tiqwah ASCII", default=False)
-    parser.add_argument("-s", "--sampa", "--tiqwah2sampa", action="store_true",
-                        help="Convert Tiqwah ASCII to SAMPA phonetic ASCII", default=False)
-    parser.add_argument('input_file_name',
-                        help="file to be processed")
-    parser.add_argument('output_file_name',
-                        help="result file")
-    args = parser.parse_args()
-    mode = 'tiqwah'
-    if args.unicode:
-        mode = 'unicode'
-    elif args.sampa:
-        mode = 'sampa'
-    main(args.input_file_name, args.output_file_name, mode)
 # End of haaper.py

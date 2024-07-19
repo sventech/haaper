@@ -1,0 +1,18 @@
+[project]
+name = "haaper"
+version = "0.4"
+authors = [
+  { name="Sven Pedersen", email="sven.pedersen@gmail.com" },
+]
+description = "A small example package"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GPL v2",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/sventech/haaper"
+Issues = "https://github.com/sventech/haaper/issues"
