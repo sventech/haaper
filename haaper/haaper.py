@@ -6,7 +6,6 @@ import re
 import codecs
 from collections import UserDict
 import argparse
-from haaper.haik_vantoura_key import ProsePattern_dict, PsalmPattern_dict, CodePattern_dict, CodeTable_dict
 
 # single-pass multiple string substitution using a dictionary:
 # by Xavier Defrang
@@ -75,6 +74,8 @@ DIRECTION_MARKERS = [LRM, RLM, LRE, RLE, PDF, LRO, RLO]
 
 
 # Letters"  = Consonants
+F = "[ .,;?]" # final letter of word (sofit)
+# TODO: add <EOW> marker for end of word
 tiqwah2unicode_dict = {
     "'"  :       "\u05d0", # aleph
     "b"  :       "\u05d1", # bet / vet
@@ -86,18 +87,18 @@ tiqwah2unicode_dict = {
     "x"  :       "\u05d7", # khet
     "T"  :       "\u05d8", # tet
     "y"  :       "\u05d9", # yodh / yud
-    "k$":        "\u05dA", # final kaf-sofit
-    "k"  :       "\u05dB", # kaf / kaph
-    "l"  :       "\u05dC", # lamedh
-    "m$":        "\u05dD", # final mem-sofit
-    "m"  :       "\u05dE", # mem
-    "n$":        "\u05dF", # final nun-sofit
+    f"k{F}":     "\u05da ", # final kaf-sofit
+    "k"  :       "\u05db", # kaf / kaph
+    "l"  :       "\u05dc", # lamedh
+    f"m{F}":     "\u05dd ", # final mem-sofit
+    "m"  :       "\u05de", # mem
+    f"n{F}":     "\u05df ", # final nun-sofit
     "n"  :       "\u05e0", # nun
     "s"  :       "\u05e1", # samekh
-    "`" :       "\u05e2", # ayin
-    "p$":        "\u05e3", # final pe-sofit
+    "`" :        "\u05e2", # ayin
+    f"p{F}":     "\u05e3 ", # final pe-sofit
     "p"  :       "\u05e4", # peh / pey
-    "Y$":        "\u05e5", # final tsadi-sofit
+    f"Y{F}":     "\u05e5 ", # final tsadi-sofit
     "Y"  :       "\u05e6", # tsadi
     "q"  :       "\u05e7", # quf / qof
     "r"  :       "\u05e8", # resh
@@ -186,6 +187,15 @@ tiqwah2unicode_dict = {
     "wy"    :      "\u05f1", # vav-yod
     "yy"    :      "\u05f2", # double-yod
 
+    # Extra Tiwqah characters
+    "<YYY>" :            "", # FIXME: tetragrammaton, unsupported
+    "<TETRAGRAMMATON>" : "", # FIXME: tetragrammaton, unsupported
+    "<NIL>" :            "", # Deliberate empty character to avoid final form
+    "<EOW>" :            "", # End of word (force)
+    "<EMPTY>" :          "", # Empty character, normal width, unsupported
+    "<SMALL>" :          "", # Small letter, unsupported
+    "<BIG>" :            "", # Big letter, unsupported
+
     # Added punctuation
     "!"     :      "\u05f3", # punctuation-geresh ( ' )
     "!!"    :      "\u05f4", # punctuation-gershayim ( '' )
@@ -207,12 +217,12 @@ unicode2tiqwah_dict = {
 	"\u05d7"   :   "x",  # khet
 	"\u05d8"   :   "T",  # tet
 	"\u05d9"   :   "y",  # yud
-	"\u05dA"   :   "k",  # final-kaf
-	"\u05dB"   :   "k",  # kaf
-	"\u05dC"   :   "l",  # lamed
-	"\u05dD"   :   "m",  # final-mem
-	"\u05dE"   :   "m",  # mem
-	"\u05dF"   :   "n",  # final-nun
+	"\u05da"   :   "k",  # final-kaf
+	"\u05db"   :   "k",  # kaf
+	"\u05dc"   :   "l",  # lamed
+	"\u05dd"   :   "m",  # final-mem
+	"\u05de"   :   "m",  # mem
+	"\u05df"   :   "n",  # final-nun
 	"\u05e0"   :   "n",  # nun
 	"\u05e1"   :   "s",  # samekh
 	"\u05e2"   :   "`",  # ayin
@@ -225,7 +235,7 @@ unicode2tiqwah_dict = {
 	"\u05e9\u05c1": "S", # shin w/dot
 	"\u05e9\u05c2": "W", # sin  w/dot
 	"\u05e9"   :    "W/", # shin / no dot
-	"\u05eA"   :    "t", # tav
+	"\u05ea"   :    "t", # tav
 	"\ufb4f"   :  "'/l", # aleph-lamed ligature
 
     # Points and punctuation
@@ -413,6 +423,95 @@ tiqwah2SAMPA_dict = {
     "$": "\""
 }
 
+# Haik-Vantoura Key to Tiqwah ASCII
+ProsePattern_dict = {
+	# Upper Accents (relative to the previous note)
+	"<PAS>"   :  "[+1]",       # pashta
+	"<AZL>"   :  "[+1]",       # azla / qadma / (pashta late)
+	"<GER>"   :  "[+2]",       # geresh
+	"<GRM>"   :  "[+2]",       # geresh-muqdam ??
+	"<GAR>"   :  "[+2+0+2]",   # garshayim
+	"<PAZ>"   :  "[+2-1]",     # pazer
+	"<ZQP>"   :  "[-1]",       # zaqef-qatan (parvum)
+	"<ZQM>"   :  "[-1-2]",     # zaqef-gadol (magnum)
+	"<RBM>"   :  "[+0]",       # revia (magnum) / gadol
+	"<AST>"   :  "[-1+0-1]",   # accent-segol ??
+	"<ZAR>"   :  "[-1+1]",     # zarqa / (t)zinor / tzinorit?
+	"<TLP>"   :  "[+1+2+3]",   # telisha-qetana (parvum)
+	"<TLM>"   :  "[+3+2+1]",   # telisha-gedola (magnum)
+	"<PZM>"   :  "[+1+2+3+3+2+1]", # qarney-para / pazer gadol (magnum) /(telisha-qetana,gedola)
+	"<OLE>"   :  "[+3+0]",     # ole / we-yored
+	"<ILL>"   :  "[+4]|[-3]",  # iluy
+	"<SHP>"   :  "[-2-1-%]",   # shalshelet
+
+	# Basic degrees (notes)
+	"<YET>"   :  "0",    # [C] yetiv / yetib (mahapakh early) TODO: timing
+	"<MEH>"   :  "6",    # [C] mahapakh
+	"<MUN>"   :  "5",    # [B] munah / munakh / logarmeh
+	"<ATN>"   :  "4",    # [A] aetnachta ? atnakh
+	"<TIP>"   :  "3",    # [G] tipeha / tif'kha
+	"<DEH>"   :  "9",    # [G] dehi / tif'kha early
+	"<MER>"   :  "2",    # [F/F#] merkha
+	"<MEK>"   :  "22",   # [FF] merkha-kefula (double merkha)?
+	"<SIL>"   :  "1",    # [E] silluq / meteg / ga`ya
+	"<GAL>"   :  "8",    # [D#] yerah-ben-yomo / galgal
+	"<TEB>"   :  "7",    # [D,] tevir / tebir
+	"<DAR>"   :  "6",    # [C,] darga -- FIXME: check octave
+
+	# End of a Parsha
+	"<SET>"   :  "", # parsha marker Setuma (Samekh)
+	"<PET>"   :  "", # parsha marker Petukha (Pe)
+	"<RST>"   :  "r" # rest inside verse (comma)
+}
+PsalmPattern_dict = ProsePattern_dict.copy()
+# alternate meaning of revia for Psalmodic
+PsalmPattern_dict["<RBM>"] = "[-1]" # revia (magnum) / gadol
+
+
+# codes to allow separation of text and music information
+CodeTable_dict = {
+	# Upper Accents
+	"100":	"<PAS>",   # pashta
+	"101":	"<AZL>",   # azla / qadma / (pashta late)
+	"102":	"<GER>",   # geresh
+	"103":	"<GRM>",   # geresh-muqdam ??
+	"104":	"<GAR>",   # garshayim
+	"105":	"<PAZ>",   # pazer
+	"106":	"<ZQP>",   # zaqef-qatan (parvum)
+	"107":	"<ZQM>",   # zaqef-gadol (magnum)
+	"108":	"<RBM>",   # revia (magnum) / gadol
+	"109":	"<AST>",   # accent-segol ??
+	"110":	"<ZAR>",   # zarqa / (t)zinor / tzinorit?
+	"111":	"<TLP>",   # telisha-qetana (parvum)
+	"112":	"<TLM>",   # telisha-gedola (magnum)
+	"113":	"<PZM>",   # qarney-para / pazer gadol (magnum) /(telisha-qetana,gedola)
+	"114":	"<OLE>",   # ole / we-yored
+	"115":	"<ILL>",   # iluy
+	"116":	"<SHP>",   # shalshelet
+
+	# Basic degrees (notes)
+	"011":	"<YET>",   # [C] yetiv / yetib (mahapakh early)
+	"010":	"<MEH>",   # [C] mahapakh
+	"009":	"<MUN>",   # [B] munah / munakh / logarmeh
+	"008":	"<ATN>",   # [A] aetnachta ? atnakh
+	"007":	"<TIP>",   # [G] tipeha / tif'kha
+	"006":	"<DEH>",   # [G] dehi / tif'kha early
+	"005":	"<MER>",   # [F/F#] merkha
+	"004":	"<MEK>",   # [FF] merkha-kefula (double merkha)?
+	"003":	"<SIL>",   # [E] silluq / meteg / ga`ya
+	"002":	"<GAL>",   # [D#] yerah-ben-yomo / galgal
+	"001":	"<TEB>",   # [D,] tevir / tebir
+	"000":	"<DAR>",   # [C,] darga -- FIXME
+
+	# End of a Parsha
+	"200":	"<SET>",   # parsha marker Setuma (Samekh)
+	"201":	"<PET>",   # parsha marker Petukha (Pe)
+	"999":	"<RST>"    # rest inside verse (comma)
+}
+
+# reverse the dictionary for easy lookup restoring the original code
+CodePattern_dict = {tikva: f"[{numeric}]" for numeric, tikva in CodeTable_dict.items()}
+
 
 def custom2xlat(custom_text: str, match_dict: dict, rtl=False, verbose=False) -> str:
     """ convert from a custom format based on a regex dict"""
@@ -456,17 +555,64 @@ def code2tiqwah(hebrew_code: str, verbose=False) -> str:
     return CodeTable_dict[hebrew_code]
 
 
-def tiqwah2prose_pattern(hebrew_tiqwah: str, verbose=False) -> str:
-    """ convert from a Tiqwah ASCII to a music prosodic pattern, absolute pitch or relative pitch +1/-1 etc"""
-    xlator = Xlator(ProsePattern_dict, verbose=verbose)
-    code_text = xlator.xlat(hebrew_tiqwah)
-    return code_text
+def tiqwah2pattern(text, is_psalmodic=False) -> str:
+    """ convert from a Tiqwah ASCII to a music pattern, absolute pitch or relative pitch +1/-1 etc"""
+    if is_psalmodic:
+        return custom2xlat(text, PsalmPattern_dict, rtl=False)
+    else:
+        return custom2xlat(text, ProsePattern_dict, rtl=False)
 
 
-def tiqwah2psalm_pattern(hebrew_tiqwah: str, verbose=False) -> str:
-    """ convert from a Tiqwah ASCII to a music psalmodic pattern, absolute pitch or relative pitch +1/-1 etc"""
-    xlator = Xlator(PsalmPattern_dict, verbose=verbose)
-    code_text = xlator.xlat(hebrew_tiqwah)
-    return code_text
+def transliterate(input_file_name: str, output_file_name: str, mode='tiqwah', verbose=False):
+    input_file = codecs.open(input_file_name, 'r', encoding='utf-8')
+    output_file = codecs.open(output_file_name, 'w+', encoding='utf-8')
+
+    for line in input_file:
+        line = line.rstrip('\n')
+        if 'sampa' == mode:
+            output_file.write(tiqwah2phonetic(line, verbose) + '\n')
+        elif 'unicode' == mode:
+            output_file.write(unicode2tiqwah(line, verbose) + '\n')
+        elif 'tiqwah' == mode:
+            output_file.write(tiqwah2unicode(line, verbose) + '\n')
+        elif mode.endswith('pattern'):
+            psalm = mode.startswith('psalm')
+            output_file.write(tiqwah2pattern(line, is_psalmodic=psalm) + '\n')
+
+
+def main():
+    parser = argparse.ArgumentParser(description='haaper: Convert one Hebrew encoding to another')
+    parser.add_argument("-v", "--verbose", action="store_true", help="increase output verbosity")
+    parser.add_argument("-t", "--tiqwah", "--tiqwah2unicode", action="store_true",
+                        help="Convert Tiqwah format to Unicode Hebrew (default)", default=True)
+    parser.add_argument("-u", "--unicode", "--unicode2tiqwah", action="store_true",
+                        help="Convert Unicode Hebrew to Tiqwah ASCII", default=False)
+    parser.add_argument("-s", "--sampa", "--tiqwah2sampa", action="store_true",
+                        help="Convert Tiqwah ASCII to SAMPA phonetic ASCII", default=False)
+    parser.add_argument("-p", "--pattern", "--tiqwah2pattern", action="store_true",
+                        help="Convert Tiqwah ASCII to music pattern", default=False)
+    parser.add_argument("-m", "--music", "--tiqwah2music", action="store_true",
+                        help="Convert Tiqwah ASCII to music pattern", default=False)
+    parser.add_argument("--psalmodic", action="store_true", default=False,
+                        help="Use the Psalmodic pattern for music")
+    parser.add_argument('input_file_name',
+                        help="file to be processed")
+    parser.add_argument('output_file_name',
+                        help="result file")
+    args = parser.parse_args()
+    mode = 'tiqwah'
+    if args.unicode:
+        mode = 'unicode'
+    elif args.sampa:
+        mode = 'sampa'
+    elif args.pattern:
+        mode = 'prose_pattern' if not args.psalmodic else 'psalm_pattern'
+    elif args.music:
+        mode = 'music'
+    transliterate(args.input_file_name, args.output_file_name, mode, args.verbose)
+
+
+if __name__ == "__main__":
+    main()
 
 # End of haaper.py
