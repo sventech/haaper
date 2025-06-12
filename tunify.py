@@ -90,9 +90,9 @@ beat_unit = 4  # we assume 4/4 or 3/4 rhythm
 #  psa   "GAL"   :  "8",    # [D#] yerah-ben-yomo / galgal
 #        "TEB"   :  "7,",   # [D,] tevir / tebir
 #        "DAR"   :  "6,",   # [C,] darga -- FIXME
-natur = ['do', 're', 'mi', 'fa', 'sol', 'la', 'ti', 'do']
-sharp = ['di', 'ri', 'mi', 'fa', 'sol', 'la', 'ti', 'di']
-flatt = ['ti', 'ra', 'me', 'mi', 'se', 'le', 'ta', 'de']
+naturals = ['do', 're', 'mi', 'fa', 'sol', 'la', 'ti', 'do']
+sharps =   ['di', 'ri', 'mi', 'fa', 'sol', 'la', 'ti', 'di']
+flats =    ['ti', 'ra', 'me', 'mi', 'se',  'le', 'ta', 'de']
 
 
 def decode_note(tla_note: str, cur_note: str, is_psalmodic=False, mode='chromatic-dorian'):
@@ -132,7 +132,7 @@ def decode_note(tla_note: str, cur_note: str, is_psalmodic=False, mode='chromati
     else:
         # FIXME: always empty
         pass
-        # print(f'* {tla_note} -> {num_note} *')
+    # print(f'* {tla_note} -> {num_note} *')
 
     return notes
 
@@ -171,8 +171,9 @@ def get_syllable(phrase: str) -> list:
     # remove rafe -- fricative indicator
     phrase = re.sub('<RAF>', '', phrase)
 
-    # remove grammatical break
+    # remove grammatical break and hyphen
     phrase = re.sub('_', '', phrase)
+    phrase = re.sub('=', '', phrase)
 
     # break down by syllables, notes and ornaments
     #  the core vowel is the heart of the syllable
@@ -264,22 +265,20 @@ def get_alda(input_iterable, output_file, column='text', is_psalmodic=False, ins
             meta = verse
             continue
         assert column in verse.keys(), f"No text '{column}' found in input: {verse}"
+        ref = f"{meta['name']} {verse['ref']}"
 
         # get the Haik-Vantoura intermediate version
         phrase = tiqwah2codes(verse[column])
         for word in phrase.split(' '):
-            syl = get_syllable(word)
-            # FIXME: add hyphenation to indicate word connections
+            syl = get_syllable(word) # FIXME: add hyphenation to indicate word connections
             syllables.extend(syl)
         music = decode_verse(syllables, is_psalmodic)
-        #print(syllables)
-        #print(music)
         alda_text = to_alda(music)
         output_file.write(alda_text)
         output_file.write(f"# {verse[column]}\n")
         try:
-            output_file.write(f"# {' '.join([t['text'] for t in syllables if t['text'] is not None])}\n")
-            output_file.write(f"# {' '.join([t['ipa'] for t in syllables if t['ipa'] is not None])}\n")
+            output_file.write(f"# {ref} {' '.join([t['text'] for t in syllables if t['text'] is not None])}\n")
+            output_file.write(f"# {ref} {' '.join([t['ipa'] for t in syllables if t['ipa'] is not None])}\n")
         except Exception as e:
             print(f"Failed text: {e}")
             print(f"{syllables}")
