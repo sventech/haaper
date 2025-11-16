@@ -1,6 +1,6 @@
 import pytest
 from pathlib import Path
-from haaper.haaper import custom2xlat, unicode2tiqwah, tiqwah2unicode, tiqwah2phonetic, \
+from haaper import custom2xlat, unicode2tiqwah, tiqwah2unicode, tiqwah2phonetic, \
     tiqwah2pattern, DIRECTION_MARKERS
 
 UNICODE_EXAMPLE = Path('tests/human_rights.txt').read_text()

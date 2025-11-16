@@ -31,7 +31,7 @@ def strip_regex(stringSource, regexPattern) -> tuple:
 
 
 # consonants + aleph & ayin, begadkefat
-consonant = r'b\*|g\*|d\*|k\*|p\*|t\*|'  # begadkefat (w/dagesh)
+consonant = r'b\*|g\*|d\*|k\*|p\*|t\*|'  # begadkefat (letters w/dagesh)
 consonant += r'l\*|S\*|'				 # lamed/shin/
 consonant += r'[\'bgdhwzxTyklmns\`pYqrSWt]|(W\/)|'  # regular C's, sin w/out dot
 C = named_regex("C", consonant, optional=False)
@@ -132,7 +132,7 @@ def decode_note(tla_note: str, cur_note: str, is_psalmodic=False, mode='chromati
     else:
         # FIXME: always empty
         pass
-    # print(f'* {tla_note} -> {num_note} *')
+        # print(f'* {tla_note} -> {num_note} *')
 
     return notes
 
@@ -264,6 +264,8 @@ def get_alda(input_iterable, output_file, column='text', is_psalmodic=False, ins
         if 'name' in verse.keys() and column not in verse.keys():
             meta = verse
             continue
+        elif not meta and 'book' in verse.keys():
+            meta = {'name': verse['book']}
         assert column in verse.keys(), f"No text '{column}' found in input: {verse}"
         ref = f"{meta['name']} {verse['ref']}"
 
@@ -285,7 +287,7 @@ def get_alda(input_iterable, output_file, column='text', is_psalmodic=False, ins
         output_file.write("\n")
 
 
-if __name__ == '__main__':
+def main():
     class ModesAction(argparse.Action):
         def __init__(self, option_strings, dest, nargs=None, **kwargs):
             super(ModesAction, self).__init__(option_strings, dest, nargs=0, **kwargs)
@@ -300,7 +302,7 @@ if __name__ == '__main__':
     parser.add_argument("-o", "--octave", default=3, help="Octave for score")
     parser.add_argument("-m", "--mode", default='', help="Mode for score (default-prose: chromatic-dorian, default-psalm: dorian)")
     parser.add_argument("--modes", default=False, action=ModesAction, help="List available musical modes")
-    parser.add_argument("--csv", action="store_true", default=False, help="Extract from CSV file")
+    parser.add_argument("--csv", action="store_true", default=False, help="Extract from CSV/TSV file")
     parser.add_argument("--data-column", default='text', help="Specify column for text extraction: default 'text'")
     args = parser.parse_args()
     mode = args.mode if args.mode else 'dorian' if args.psalmodic else 'chromatic-dorian'
@@ -322,3 +324,6 @@ if __name__ == '__main__':
     
     input_file.close()
     output_file.close()
+
+if __name__ == '__main__':
+    main()

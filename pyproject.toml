@@ -1,18 +1,32 @@
 [project]
 name = "haaper"
-version = "0.4"
+version = "0.5.0"
 authors = [
   { name="Sven Pedersen", email="sven.pedersen@gmail.com" },
 ]
-description = "A small example package"
+description = "Convert Hebrew text between Unicode UTF-8 encoding and Tiqwah ASCII representation"
 readme = "README.md"
 requires-python = ">=3.10"
+license = "MIT"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: GPL v2",
     "Operating System :: OS Independent",
+]
+dependencies = [
+    "pytest>=7.0.0",
 ]
 
 [project.urls]
 Homepage = "https://github.com/sventech/haaper"
 Issues = "https://github.com/sventech/haaper/issues"
+
+[tool.uv]
+package = true
+
+[project.scripts]
+haaper = "haaper.haaper:main"
+tunify = "haaper.tunify:main"
+
+[build-system]
+requires = ["uv_build>=0.9.9,<0.10.0"]
+build-backend = "uv_build"

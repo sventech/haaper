@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # Filename: haaper.py
 
-version = 0.4
 import re
 import codecs
 from collections import UserDict

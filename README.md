@@ -10,8 +10,33 @@ Håper is Norwegian for 'hope,' equivalent to Hebrew תִקְוָה /tiqwah/ or 
 * The inspiration for this project was part of another quest; testing 
 the hypothesis that [Suzanne Haïk-Vantoura's musicological interpretation](https://en.wikipedia.org/wiki/Suzanne_Ha%C3%AFk-Vantoura) that the te'amim, Hebrew Bible symbols for cantillation, could be understood as individual notes and decorations rather than patterns.
 
+## Development Setup
+
+This project uses UV for Python package management. To get started:
+
+1. Install UV if you haven't already:
+   https://docs.astral.sh/uv/getting-started/installation/
+
+2. Create and activate a virtual environment:
+   ```bash
+   uv venv
+   source .venv/bin/activate  # On Unix/macOS
+   # or
+   .venv\Scripts\activate  # On Windows
+   ```
+
+3. Install dependencies:
+   ```bash
+   uv pip install -r requirements.txt
+   ```
+
+4. Install the project in development mode:
+   ```bash
+   uv tool install -e .
+   ```
+
 <pre>
-usage: transliterate.py [-h] [-v] [-t] [-u] [-s] input_file_name output_file_name
+usage: haaper [-h] [-v] [-t] [-u] [-s] input_file_name output_file_name
 
 haaper: Convert one Hebrew encoding to another
 
@@ -28,4 +53,27 @@ optional arguments:
                         Convert unicode Hebrew to Tiqwah ASCII
   -s, --sampa, --tiqwah2sampa
                         Convert Tiqwah ASCII to SAMPA phonetic ASCII
+</pre>
+
+<pre>
+usage: tunify [-h] [-p] [-i INSTRUMENT] [-o OCTAVE] [-m MODE] [--modes] [--csv] [--data-column DATA_COLUMN] input_file_name output_file_name
+
+Bible text music ala Haik-Vantoura
+
+positional arguments:
+  input_file_name       file to be processed
+  output_file_name      result file
+
+options:
+  -h, --help            show this help message and exit
+  -p, --psalmodic       Use psalmody interpretation of notes
+  -i INSTRUMENT, --instrument INSTRUMENT
+                        Alda/midi instrument for score
+  -o OCTAVE, --octave OCTAVE
+                        Octave for score
+  -m MODE, --mode MODE  Mode for score (default-prose: chromatic-dorian, default-psalm: dorian)
+  --modes               List available musical modes
+  --csv                 Extract from CSV/TSV file
+  --data-column DATA_COLUMN
+                        Specify column for text extraction: default 'text'
 </pre>
